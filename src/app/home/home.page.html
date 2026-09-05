@@ -3,4 +3,16 @@
   <div class="locate-btn">
     <ion-button (click)="locateMe()">Locate Me</ion-button>
   </div>
+  <div class="info-card">
+    <p><strong>Start:</strong> {{ latlng.lat }}, {{ latlng.lng }}</p>
+    <p><strong>Live:</strong> {{ distanceFromStart() }}m traveled</p>
+    <p>{{ display_name() }}</p>
+  </div>
+  <ion-alert
+    [message]="myMessage"
+    [header]="myHeader"
+    [isOpen]="isAlertOpen"
+    (didDismiss)="setOpen(false)"
+    [buttons]="alertButtons">
+  </ion-alert>
 </ion-content>

@@ -16,3 +16,36 @@ ion-content {
   right: 20px;
   z-index: 1000;
 }
+
+.info-card {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-size: 12px;
+  text-align: center;
+  width: 80%;
+  max-width: 300px;
+}
+
+.info-card p {
+  margin: 4px 0;
+}
+
+.distance-tooltip {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.distance-tooltip::before {
+  border-top-color: rgba(0, 0, 0, 0.7);
+}
