@@ -21,6 +21,7 @@ export class HomePage implements AfterViewInit {
   display_name = signal('');
   loader?: HTMLIonLoadingElement;
 
+  startMarker?: L.CircleMarker;
   lastMarker?: L.CircleMarker;
   distanceLine?: L.Polyline;
   distanceTooltip?: L.Tooltip;
@@ -32,6 +33,7 @@ export class HomePage implements AfterViewInit {
   constructor(private loadingController: LoadingController) {
     effect(() => {
       const pos = this.GeolocationService.movingPosition();
+      console.log('Live position update:', pos);
       if (pos && this.map) {
         const startLatLng = L.latLng(this.latlng.lat, this.latlng.lng);
         const movingLatLng = L.latLng(pos.lat, pos.lng);
@@ -90,7 +92,7 @@ export class HomePage implements AfterViewInit {
       this.showLoading();
       const coordinates = await this.GeolocationService.getCurrentLocation();
       this.latlng = coordinates;
-      this.mapInit();
+      await this.mapInit();
       await this.hideLoading();
 
       fetch(
@@ -106,7 +108,7 @@ export class HomePage implements AfterViewInit {
     }
   }
 
-  mapInit() {
+  async mapInit() {
     this.map = L.map('map', {
       center: [this.latlng.lat, this.latlng.lng],
       zoom: 19,
@@ -117,7 +119,7 @@ export class HomePage implements AfterViewInit {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(this.map);
 
-    L.circleMarker([this.latlng.lat, this.latlng.lng], {
+    this.startMarker = L.circleMarker([this.latlng.lat, this.latlng.lng], {
       radius: 5,
       color: '#d62828',
     }).addTo(this.map);
@@ -126,33 +128,46 @@ export class HomePage implements AfterViewInit {
       this.map.invalidateSize();
     }, 200);
 
-    this.GeolocationService.watchPosition();
+    await this.GeolocationService.requestPermissions();
+    await this.GeolocationService.watchPosition();
   }
 
   async locateMe() {
-    const position = await this.GeolocationService.getCurrentLocation();
-    this.latlng = position;
+    try {
+      const position = await this.GeolocationService.getCurrentLocation();
+      this.latlng = position;
 
-    this.map.setView([position.lat, position.lng], 19);
+      this.map.setView([position.lat, position.lng], 19);
 
-    if (this.lastMarker) {
-      this.lastMarker.setLatLng([position.lat, position.lng]);
-    } else {
-      this.lastMarker = L.circleMarker([position.lat, position.lng], {
+      if (this.startMarker) {
+        this.startMarker.remove();
+      }
+      this.startMarker = L.circleMarker([position.lat, position.lng], {
         radius: 5,
         color: '#d62828',
       }).addTo(this.map);
+
+      if (this.lastMarker) {
+        this.lastMarker.setLatLng([position.lat, position.lng]);
+      } else {
+        this.lastMarker = L.circleMarker([position.lat, position.lng], {
+          radius: 5,
+          color: '#d62828',
+        }).addTo(this.map);
+      }
+
+      fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          this.display_name.set(data.display_name);
+        });
+
+      console.log(position.lat + ' ' + position.lng);
+    } catch (error) {
+      this.isAlertOpen = true;
     }
-
-    fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        this.display_name.set(data.display_name);
-      });
-
-    console.log(position.lat + ' ' + position.lng);
   }
 
   setOpen(isOpen: boolean) {

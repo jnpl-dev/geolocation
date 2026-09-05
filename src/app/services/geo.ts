@@ -33,4 +33,9 @@ export class Geo {
   async clearWatch(watchId: string) {
     await Geolocation.clearWatch({ id: watchId });
   }
+
+  async requestPermissions() {
+    const status = await Geolocation.requestPermissions();
+    return status.location;
+  }
 }

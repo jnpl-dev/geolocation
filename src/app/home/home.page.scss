@@ -15,6 +15,10 @@ ion-content {
   bottom: 20px;
   right: 20px;
   z-index: 1000;
+
+  ion-button {
+    --color: white;
+  }
 }
 
 .info-card {
