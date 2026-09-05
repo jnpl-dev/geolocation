@@ -4,6 +4,7 @@ import { Geolocation } from '@capacitor/geolocation';
 @Injectable({ providedIn: 'root' })
 export class Geo {
   movingPosition = signal<{ lat: number; lng: number } | null>(null);
+  private watchId: string | null = null;
 
   async getCurrentLocation() {
     const pos = await Geolocation.getCurrentPosition({
@@ -16,7 +17,7 @@ export class Geo {
   }
 
   async watchPosition() {
-    const watchId = await Geolocation.watchPosition(
+    this.watchId = await Geolocation.watchPosition(
       { enableHighAccuracy: true },
       (pos) => {
         if (pos) {
@@ -27,11 +28,15 @@ export class Geo {
         }
       }
     );
-    return watchId;
+    return this.watchId;
   }
 
-  async clearWatch(watchId: string) {
-    await Geolocation.clearWatch({ id: watchId });
+  async stopWatching() {
+    if (this.watchId) {
+      await Geolocation.clearWatch({ id: this.watchId });
+      this.watchId = null;
+      this.movingPosition.set(null);
+    }
   }
 
   async requestPermissions() {

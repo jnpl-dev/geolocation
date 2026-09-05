@@ -1,7 +1,9 @@
 <ion-content [fullscreen]="true">
   <div id="map"></div>
-  <div class="locate-btn">
+  <div class="bottom-btns">
     <ion-button (click)="locateMe()">Locate Me</ion-button>
+    <ion-button (click)="startTracking()" [disabled]="isTracking" color="success">Start Tracking</ion-button>
+    <ion-button (click)="stopTracking()" [disabled]="!isTracking" color="danger">Stop Tracking</ion-button>
   </div>
   <div class="info-card">
     <p><strong>Start:</strong> {{ latlng.lat }}, {{ latlng.lng }}</p>

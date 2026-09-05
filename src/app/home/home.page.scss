@@ -10,14 +10,17 @@ ion-content {
   height: 100%;
 }
 
-.locate-btn {
+.bottom-btns {
   position: absolute;
   bottom: 20px;
-  right: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1000;
+  display: flex;
+  gap: 8px;
 
   ion-button {
-    --color: white;
+    color: white !important;
   }
 }
 

@@ -26,6 +26,7 @@ export class HomePage implements AfterViewInit {
   distanceLine?: L.Polyline;
   distanceTooltip?: L.Tooltip;
   distanceFromStart = signal(0);
+  isTracking = false;
 
   myHeader = 'Geolocation API Error';
   myMessage = 'Unable to get current location.';
@@ -34,7 +35,7 @@ export class HomePage implements AfterViewInit {
     effect(() => {
       const pos = this.GeolocationService.movingPosition();
       console.log('Live position update:', pos);
-      if (pos && this.map) {
+      if (pos && this.map && this.isTracking) {
         const startLatLng = L.latLng(this.latlng.lat, this.latlng.lng);
         const movingLatLng = L.latLng(pos.lat, pos.lng);
 
@@ -129,7 +130,6 @@ export class HomePage implements AfterViewInit {
     }, 200);
 
     await this.GeolocationService.requestPermissions();
-    await this.GeolocationService.watchPosition();
   }
 
   async locateMe() {
@@ -148,13 +148,18 @@ export class HomePage implements AfterViewInit {
       }).addTo(this.map);
 
       if (this.lastMarker) {
-        this.lastMarker.setLatLng([position.lat, position.lng]);
-      } else {
-        this.lastMarker = L.circleMarker([position.lat, position.lng], {
-          radius: 5,
-          color: '#d62828',
-        }).addTo(this.map);
+        this.lastMarker.remove();
+        this.lastMarker = undefined;
       }
+      if (this.distanceLine) {
+        this.distanceLine.remove();
+        this.distanceLine = undefined;
+      }
+      if (this.distanceTooltip) {
+        this.distanceTooltip.remove();
+        this.distanceTooltip = undefined;
+      }
+      this.distanceFromStart.set(0);
 
       fetch(
         `https://nominatim.openstreetmap.org/reverse?lat=${position.lat}&lon=${position.lng}&format=json`
@@ -168,6 +173,16 @@ export class HomePage implements AfterViewInit {
     } catch (error) {
       this.isAlertOpen = true;
     }
+  }
+
+  async startTracking() {
+    this.isTracking = true;
+    await this.GeolocationService.watchPosition();
+  }
+
+  async stopTracking() {
+    this.isTracking = false;
+    await this.GeolocationService.stopWatching();
   }
 
   setOpen(isOpen: boolean) {
